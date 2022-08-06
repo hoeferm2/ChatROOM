@@ -1,23 +1,25 @@
 const cors = require('cors')
-
 const path = require('path')
 const http = require('http')
 const express = require("express")
-const { Server } = require('socket.io')
+const socketio = require('socket.io')
 const formatMessage = require('./utils/messages')
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./utils/users')
-const { application } = require('express')
 
 const PORT = 8000 || process.env.PORT;
 
 const app = express();
-const server1 = http.createServer(app)
-const io = new Server(server1)
+const server = http.createServer(app)
+console.log(server)
+const io = socketio(server)
 
 // Set Static Folder
 app.use(express.static(path.join(__dirname, 'public')))
 
-app.use(cors())
+app.use(cors({
+    origin: '*'
+}
+))
 
 // Chat bot
 
@@ -27,7 +29,7 @@ const botName = 'MonkeyBot'
 io.on('connection', socket => {
     console.log('new conneciton', socket)
     socket.on('joinRoom', ({ username, room }) => {
-        console.log('joinRoom', username, room)
+        console.log('joinRoom', socket)
         const user = userJoin(socket.id, username, room)
 
         socket.join(user.room);
